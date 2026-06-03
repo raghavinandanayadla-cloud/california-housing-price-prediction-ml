@@ -92,7 +92,11 @@ def load_data():
     housing = fetch_california_housing(as_frame=True)
     df = housing.frame.copy()
     df.columns = [c.lower() for c in df.columns]
-    df.rename(columns={"medhousval": "median_house_value"}, inplace=True)
+    # sklearn uses 'MedHouseVal' → after .lower() becomes 'medhouseval'
+    rename_map = {c: "median_house_value" for c in df.columns if "houseval" in c}
+    if not rename_map:
+        rename_map = {df.columns[-1]: "median_house_value"}
+    df.rename(columns=rename_map, inplace=True)
     df["median_house_value"] = df["median_house_value"] * 100_000  # scale to dollars
     df.fillna(df.mean(numeric_only=True), inplace=True)
     df.drop_duplicates(inplace=True)
