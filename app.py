@@ -216,8 +216,33 @@ st.markdown("""
 
 # ─── Sidebar ─────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Flag_of_California.svg/800px-Flag_of_California.svg.png", use_container_width=True)
-    st.title("🏠 CA Housing ML")
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #1f77b4, #0d4f8c);
+        border-radius: 12px;
+        padding: 24px 16px 20px;
+        text-align: center;
+        margin-bottom: 8px;
+    ">
+        <div style="font-size: 3rem; line-height: 1;">🏠</div>
+        <div style="color: white; font-size: 1.25rem; font-weight: 800; margin-top: 8px; letter-spacing: 0.5px;">
+            California Housing
+        </div>
+        <div style="color: rgba(255,255,255,0.75); font-size: 0.8rem; margin-top: 4px;">
+            ML Price Predictor
+        </div>
+        <div style="
+            margin-top: 12px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 4px 12px;
+            display: inline-block;
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 600;
+        ">📊 12 Models · GridSearchCV Tuned</div>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("**Navigation**")
     page = st.radio("", [
