@@ -340,8 +340,9 @@ elif page == "🤖 Individual Models":
         m = compute_metrics(y_ref, preds_to_show)
 
     c1, c2, c3, c4 = st.columns(4)
-    for col, label, val in zip([c1,c2,c3,c4], m.keys(), m.values()):
-        col.markdown(f"""<div class='metric-card'><h3>{label}</h3><p>{val:,.0f if label!="R²" else ".4f"}</p></div>""".replace(":,.0f if label!=\"R²\" else \".4f\"", ",.0f" if label != "R²" else ".4f"), unsafe_allow_html=True)
+    for col, label, val in zip([c1, c2, c3, c4], m.keys(), m.values()):
+        fmt_val = f"{val:.4f}" if label == "R²" else f"{val:,.0f}"
+        col.markdown(f"<div class='metric-card'><h3>{label}</h3><p>{fmt_val}</p></div>", unsafe_allow_html=True)
 
     st.markdown("<div class='section-header'>Actual vs Predicted</div>", unsafe_allow_html=True)
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
