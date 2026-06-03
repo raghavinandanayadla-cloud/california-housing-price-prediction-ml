@@ -33,6 +33,10 @@ This project predicts the **median house value** of California neighbourhood blo
 
 ---
 
+## Live Demo
+
+ https://california-housing-price-prediction-ml.streamlit.app/
+
 ##  Dataset
 
 **Source:** [California Housing Prices — Kaggle](https://www.kaggle.com/datasets/camnugent/california-housing-prices)
