@@ -1,15 +1,16 @@
-# California Housing Price Prediction
+# 🏠 California Housing Price Prediction
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue?style=flat-square&logo=python)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.x-orange?style=flat-square&logo=scikit-learn)
 ![XGBoost](https://img.shields.io/badge/XGBoost-Latest-green?style=flat-square)
 ![Kaggle](https://img.shields.io/badge/Dataset-Kaggle-20BEFF?style=flat-square&logo=kaggle)
+![Streamlit](https://img.shields.io/badge/Streamlit-Live%20App-FF4B4B?style=flat-square&logo=streamlit)
 
 A complete machine learning pipeline to predict California housing prices using regression models and ensemble techniques.
 
 ---
 
-##  Table of Contents
+## Table of Contents
 1. [Project Overview](#-project-overview)
 2. [Dataset](#-dataset)
 3. [Project Architecture](#-project-architecture)
@@ -22,16 +23,17 @@ A complete machine learning pipeline to predict California housing prices using 
 10. [Key Insights](#-key-insights)
 11. [Technologies Used](#-technologies-used)
 12. [Future Work](#-future-work)
+13. [🌐 Streamlit Web App](#-streamlit-web-app)
 
 ---
 
-## Project Overview
+## 📖 Project Overview
 
 This project predicts the **median house value** of California neighbourhood blocks using the 1990 Census dataset. The pipeline covers data cleaning, exploratory analysis, feature engineering, seven individual regression models, seven ensemble methods, and cross-validation — with a final comparison of all models using standard regression metrics.
 
 ---
 
-## Dataset
+##  Dataset
 
 **Source:** [California Housing Prices — Kaggle](https://www.kaggle.com/datasets/camnugent/california-housing-prices)
 **Size:** 20,640 rows × 10 columns
@@ -50,7 +52,7 @@ This project predicts the **median house value** of California neighbourhood blo
 
 ---
 
-## Project Architecture
+##  Project Architecture
 
 ```
 Data Acquisition (Kaggle)
@@ -68,7 +70,7 @@ Feature Engineering & Scaling
         │
         ├──────────────┬──────────────┐
         ▼              ▼              ▼
-  Linear Models    Tree Models   Distance/Kernel
+  Linear Models   Tree Models   Distance/Kernel
   Linear Reg.     Decision Tree  KNN (k=5)
   Polynomial      Random Forest  SVR (RBF)
   Lasso (L1)      Gradient Boost
@@ -89,7 +91,7 @@ Feature Importance + Business Insights
 
 ---
 
-## Data Preprocessing & EDA
+##  Data Preprocessing & EDA
 
 **Missing Values:** The `total_bedrooms` column has ~207 nulls (~1%). These are filled with the column mean — a safe approach for such a small gap.
 
@@ -106,7 +108,7 @@ Feature Importance + Business Insights
 
 ---
 
-## Models
+##  Models
 
 ### Linear Regression
 Fits a straight line between features and house price. Applied first with only `median_income` (single-feature) to visualise the relationship, then with all features (Multiple LR). Simple and interpretable but cannot capture non-linear patterns.
@@ -156,7 +158,7 @@ A two-level ensemble: five base models (LR, DT, KNN, SVR, Lasso) generate predic
 
 ---
 
-##  Evaluation Metrics
+## Evaluation Metrics
 
 | Metric | What It Measures |
 |---|---|
@@ -169,7 +171,7 @@ A two-level ensemble: five base models (LR, DT, KNN, SVR, Lasso) generate predic
 
 ---
 
-## Results
+##  Results
 
 ### Ensemble Model Comparison
 
@@ -193,7 +195,7 @@ A two-level ensemble: five base models (LR, DT, KNN, SVR, Lasso) generate predic
 
 ---
 
-##  Feature Importance
+## Feature Importance
 
 Based on Random Forest mean impurity decrease across all 100 trees:
 
@@ -205,7 +207,7 @@ Based on Random Forest mean impurity decrease across all 100 trees:
 
 ---
 
-##  Key Insights
+## Key Insights
 
 - Income and location together explain the majority of California house price variation.
 - Simple linear models fail to capture non-linear price dynamics — tree-based and boosting models are necessary.
@@ -220,7 +222,75 @@ Based on Random Forest mean impurity decrease across all 100 trees:
 
 ---
 
-##  Technologies Used
+---
+
+## Streamlit Web App
+
+The entire ML pipeline is deployed as an **interactive multi-page Streamlit app** — no code needed to explore the models, visualisations, and predictions.
+
+### Live Demo
+> Deploy your own: push `app.py` and `requirements.txt` to GitHub, then connect to [Streamlit Cloud](https://streamlit.io/cloud).
+
+---
+
+### App Pages
+
+| Page | Description |
+|---|---|
+| 📊 **Dataset Overview** | Row count, dtypes, missing values, statistical summary of all features |
+| 📈 **EDA** | Target distribution, feature histograms, scatter plots, full correlation heatmap |
+| 🤖 **Individual Models** | Select any model — view Actual vs Predicted scatter and residual plot with live metrics |
+| 🎯 **Ensemble Models** | Explore all 7 ensemble methods with residual distribution charts |
+| 🔍 **Feature Importance** | Side-by-side bar charts for Random Forest, XGBoost, and Gradient Boosting |
+| 🏆 **Model Comparison** | Full ranked leaderboard with R² and RMSE bar charts; best model highlighted |
+| 🔮 **Predict Your Price** | Interactive sliders for all 8 features → live price estimate with error band |
+
+---
+
+### 🔮 Prediction Page Highlights
+
+- **Point estimate** — predicted median house value from your chosen model
+- **Prediction range** — Low / Point / High cards showing ±RMSE error band
+- **Model quality panel** — R², RMSE, and % vs dataset average displayed per prediction
+- **Visual range bar** — horizontal chart showing the estimate against the dataset average
+- **GridSearchCV-tuned models** — GB Tuned and XGB Tuned options with best hyperparameters shown
+- **Educational disclaimer** — every prediction is labelled *for educational purposes only*
+
+---
+
+### Running Locally
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/your-username/california-housing-price-prediction-ml.git
+cd california-housing-price-prediction-ml
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Launch the app
+streamlit run app.py
+```
+
+> **First load takes ~60 seconds** — GridSearchCV tunes XGBoost and Gradient Boosting on startup. Results are cached for the rest of the session.
+
+---
+
+### App Dependencies
+
+```
+streamlit>=1.35
+scikit-learn>=1.4
+xgboost>=2.0
+pandas>=2.0
+numpy>=1.26
+matplotlib>=3.8
+seaborn>=0.13
+```
+
+---
+
+## Technologies Used
 
 | Library | Purpose |
 |---|---|
@@ -233,20 +303,19 @@ Based on Random Forest mean impurity decrease across all 100 trees:
 
 ---
 
-##  Future Work
+## 🔮 Future Work
 
 - **Hyperparameter tuning** via GridSearchCV to push R² beyond 0.80
 - **Feature engineering** — rooms per household, bedrooms per room ratio
-- **Log-transform the target** to reduce skew and the $500K cap artefact
 - **SHAP values** for per-prediction interpretability
-- **Geospatial visualisation** — map predictions across California
-- **Pipeline standardisation** — unify scaling across all models using scikit-learn 
+- **Pipeline standardisation** — unify scaling across all models using scikit-learn `Pipeline`
 
 ---
 
 ##  Acknowledgements
 
 Dataset from [Cameron Nugent on Kaggle](https://www.kaggle.com/datasets/camnugent/california-housing-prices), sourced from the 1990 California Census.
+*Pace, R. K., & Barry, R. (1997). Sparse spatial autoregressions. Statistics & Probability Letters.*
 
 ---
-*Built with Python · Scikit-Learn · Numpy · Pandas *
+*Built with Python · Scikit-Learn · numpy · pandas · streamlit *
