@@ -245,7 +245,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("**Navigation**")
-    page = st.radio("", [
+    page = st.radio("Navigation", [
         "📊 Dataset Overview",
         "📈 EDA",
         "🤖 Individual Models",
@@ -280,7 +280,7 @@ if page == "📊 Dataset Overview":
     st.dataframe(df.describe().T.style.background_gradient(cmap="Blues", subset=["mean","std"]), use_container_width=True)
 
     st.markdown("<div class='section-header'>Data Types</div>", unsafe_allow_html=True)
-    dtype_df = pd.DataFrame({"Column": df.columns, "Dtype": df.dtypes.values, "Non-Null": df.notnull().sum().values})
+    dtype_df = pd.DataFrame({"Column": df.columns, "Dtype": df.dtypes.astype(str).values, "Non-Null": df.notnull().sum().values})
     st.dataframe(dtype_df, use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -472,8 +472,7 @@ elif page == "🏆 Model Comparison":
         return [""] * len(row)
 
     st.dataframe(
-        results.style.apply(highlight_best, axis=1).format({"MAE": "{:,.0f}", "MSE": "{:,.0f}", "RMSE": "{:,.0f}", "R²": "{:.4f}"}),
-        use_container_width=True
+        results.style.apply(highlight_best, axis=1).format({"MAE": "{:,.0f}", "MSE": "{:,.0f}", "RMSE": "{:,.0f}", "R²": "{:.4f}"}), use_container_width=True
     )
 
     st.markdown("<div class='section-header'>R² Score Comparison</div>", unsafe_allow_html=True)
