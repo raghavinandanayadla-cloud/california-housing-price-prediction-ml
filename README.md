@@ -4,13 +4,15 @@
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.x-orange?style=flat-square&logo=scikit-learn)
 ![XGBoost](https://img.shields.io/badge/XGBoost-Latest-green?style=flat-square)
 ![Kaggle](https://img.shields.io/badge/Dataset-Kaggle-20BEFF?style=flat-square&logo=kaggle)
-![Streamlit](https://img.shields.io/badge/Streamlit-Live%20App-FF4B4B?style=flat-square&logo=streamlit)
 
 A complete machine learning pipeline to predict California housing prices using regression models and ensemble techniques.
 
 ---
+## Live Demo
 
-## Table of Contents
+https://california-housing-price-prediction-ml.streamlit.app/
+
+## 📌 Table of Contents
 1. [Project Overview](#-project-overview)
 2. [Dataset](#-dataset)
 3. [Project Architecture](#-project-architecture)
@@ -22,8 +24,8 @@ A complete machine learning pipeline to predict California housing prices using 
 9. [Feature Importance](#-feature-importance)
 10. [Key Insights](#-key-insights)
 11. [Technologies Used](#-technologies-used)
-12. [Future Work](#-future-work)
-13. [🌐 Streamlit Web App](#-streamlit-web-app)
+12.  [🌐 Streamlit Web App](#-streamlit-web-app)
+13. [Future Work](#-future-work)
 
 ---
 
@@ -33,11 +35,7 @@ This project predicts the **median house value** of California neighbourhood blo
 
 ---
 
-## Live Demo
-
- https://california-housing-price-prediction-ml.streamlit.app/
-
-##  Dataset
+## Dataset
 
 **Source:** [California Housing Prices — Kaggle](https://www.kaggle.com/datasets/camnugent/california-housing-prices)
 **Size:** 20,640 rows × 10 columns
@@ -52,11 +50,9 @@ This project predicts the **median house value** of California neighbourhood blo
 | `ocean_proximity` | Categorical — distance from the ocean (5 levels) |
 | **`median_house_value`** | **Target variable — median house price in USD** |
 
-> **Note:** `median_house_value` is capped at $500,001 in the raw data — a known Census artefact that slightly affects model training on high-value properties.
-
 ---
 
-##  Project Architecture
+## 🏗️ Project Architecture
 
 ```
 Data Acquisition (Kaggle)
@@ -87,7 +83,7 @@ Ensemble Learning
         │
         ▼
 Evaluation
-(MAE · MSE · RMSE · R² · Adjusted R² )
+(MAE · MSE · RMSE · R² · Adjusted R² · 5-Fold CV)
         │
         ▼
 Feature Importance + Business Insights
@@ -112,7 +108,7 @@ Feature Importance + Business Insights
 
 ---
 
-##  Models
+## Models
 
 ### Linear Regression
 Fits a straight line between features and house price. Applied first with only `median_income` (single-feature) to visualise the relationship, then with all features (Multiple LR). Simple and interpretable but cannot capture non-linear patterns.
@@ -143,7 +139,27 @@ Uses the RBF kernel to model non-linear relationships by implicitly mapping data
 Combines Linear Regression, Lasso, Decision Tree, SVR, and KNN by **simple averaging**. Benefits from the diversity of model types but is limited by equal weighting — it cannot learn that some models are better than others.
 
 ### Bagging Regressor
-Trains 100 Decision Trees on different random bootstrap samples of the data and averages their predictions. Reduces the high variance of individual trees by averaging out their independent errors.
+**Formula:**
+$$
+\hat{y}_{\text{bag}} = \frac{1}{B} \sum_{b=1}^{B} f_b(x)
+$$
+
+Where each $f_b$ is trained on a bootstrap sample $D_b$ drawn with replacement from $D$.
+
+**How it works:**
+1. Draw $B = 100$ bootstrap samples (random rows with replacement) from training data
+2. Train a Decision Tree on each sample independently
+3. Average all 100 tree predictions
+
+**Why it reduces error:** Each tree overfits to its bootstrap sample, but their errors are uncorrelated — averaging cancels out variance while preserving the signal.
+
+**Bias-Variance decomposition:**
+$$\text{Error} = \text{Bias}^2 + \text{Variance} + \text{Noise}$$
+
+Bagging specifically targets **Variance reduction**.
+
+**In this project:** R² ≈ 0.282. Lower than boosting because averaging uncorrected trees is less powerful than sequential error correction.
+
 
 ### Random Forest
 Extends Bagging by also randomising which features each tree considers at each split, further decorrelating the trees. Also used for **feature importance analysis** in this project.
@@ -161,8 +177,88 @@ An optimised gradient boosting implementation with built-in L1/L2 regularisation
 A two-level ensemble: five base models (LR, DT, KNN, SVR, Lasso) generate predictions, and a **Random Forest meta-model** learns the optimal way to combine them. More sophisticated than voting but benefits most when base models are individually well-tuned.
 
 ---
+## 📐 Evaluation Metrics
 
-## Evaluation Metrics
+### 1. Mean Absolute Error (MAE)
+
+$$\text{MAE} = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$$
+
+**What it measures:** The average absolute difference between actual and predicted house prices in dollars.
+
+**Interpretation in this project:**
+- MAE of **$60,000** means predictions are off by $60,000 on average
+- Uses absolute value — so over-predictions and under-predictions cancel each other out equally
+- **Outlier-robust** — a single $1M prediction error doesn't inflate MAE the way it inflates RMSE
+
+**When to prefer MAE:** When large errors are not disproportionately worse than small ones (e.g. a $100K error is simply twice as bad as a $50K error, not four times).
+
+---
+
+### 2. Mean Squared Error (MSE)
+
+$$\text{MSE} = \frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2$$
+
+**What it measures:** Average of squared differences between actual and predicted prices.
+
+**Interpretation in this project:**
+- Squaring means **large errors are penalised disproportionately** — a $100K error contributes 4× more than a $50K error
+- Not in dollar units (it's dollars²), making it harder to interpret directly
+- Primary use: as the **loss function** that tree models minimise at each split
+
+**When to prefer MSE:** When catastrophically wrong predictions (e.g. predicting $50K for a $500K property) should be penalised much more severely than small errors.
+
+---
+
+### 3. Root Mean Squared Error (RMSE) ← Primary Metric
+
+$$\text{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$$
+
+**What it measures:** Square root of MSE — brings the error back to dollar units while still penalising large errors more than small ones.
+
+**Interpretation in this project (best model — Gradient Boosting):**
+- RMSE ≈ **$83,472** means the model's typical prediction error is ~$83K
+- On a dataset where prices range from ~$15K to $500K, this represents roughly **16% average error**
+- Penalises outlier errors more than MAE — a model with RMSE < MAE is impossible; when RMSE >> MAE, the model has large outlier errors
+
+**Why RMSE is the primary metric here:** It is in the same unit as the target ($), penalises large mistakes (important for mortgage/lending use cases), and is the standard benchmark for regression on this dataset.
+
+---
+
+### 4. R² Score (Coefficient of Determination)
+
+$$R^2 = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}{\sum_{i=1}^{n}(y_i - \bar{y})^2} = 1 - \frac{\text{SS}_{\text{res}}}{\text{SS}_{\text{tot}}}$$
+
+Where:
+- $\text{SS}_{\text{res}}$ = residual sum of squares (unexplained variance)
+- $\text{SS}_{\text{tot}}$ = total sum of squares (total variance in $y$)
+- $\bar{y}$ = mean of actual house values
+  
+### 5. Adjusted R²
+
+$$\bar{R}^2 = 1 - \frac{(1 - R^2)(n-1)}{n - p - 1}$$
+
+Where $n$ = number of samples, $p$ = number of features.
+
+**What it measures:** R² penalised for the number of features. Plain R² always increases (or stays the same) when you add more features — even random noise features. Adjusted R² penalises for adding features that don't improve predictive power.
+
+**Interpretation:**
+- If adding a feature genuinely improves the model: Adjusted R² increases
+- If adding a random noise feature: Adjusted R² decreases even though plain R² slightly increased
+- Always ≤ R²; the gap widens when many features are included
+
+**In this project:** Used for Multiple Linear Regression to confirm that all 8 features carry genuine signal rather than inflating R² spuriously.
+
+---
+
+### 6. Sum of Squared Errors (SSE)
+
+$$\text{SSE} = \sum_{i=1}^{n}(y_i - \hat{y}_i)^2$$
+
+**What it measures:** Total accumulated squared prediction error across all samples (unlike MSE which averages it).
+
+**Interpretation:** SSE grows with dataset size, so it cannot be used to compare models across different datasets. Used here as a supplementary diagnostic — useful for understanding the total error budget and as the quantity directly minimised by least-squares solvers.
+
+---
 
 | Metric | What It Measures |
 |---|---|
@@ -199,7 +295,7 @@ A two-level ensemble: five base models (LR, DT, KNN, SVR, Lasso) generate predic
 
 ---
 
-## Feature Importance
+##  Feature Importance
 
 Based on Random Forest mean impurity decrease across all 100 trees:
 
@@ -211,7 +307,7 @@ Based on Random Forest mean impurity decrease across all 100 trees:
 
 ---
 
-## Key Insights
+##  Key Insights
 
 - Income and location together explain the majority of California house price variation.
 - Simple linear models fail to capture non-linear price dynamics — tree-based and boosting models are necessary.
@@ -225,19 +321,17 @@ Based on Random Forest mean impurity decrease across all 100 trees:
 - **Urban planning** — understanding affordability drivers across regions
 
 ---
+## 🌐 Streamlit Web App
+
+The entire ML pipeline is deployed as an **interactive multi-page Streamlit app**.
+
+### 🚀 Live Demo
+
+https://california-housing-price-prediction-ml.streamlit.app/
 
 ---
 
-## Streamlit Web App
-
-The entire ML pipeline is deployed as an **interactive multi-page Streamlit app** — no code needed to explore the models, visualisations, and predictions.
-
-### Live Demo
-> Deploy your own: push `app.py` and `requirements.txt` to GitHub, then connect to [Streamlit Cloud](https://streamlit.io/cloud).
-
----
-
-### App Pages
+### 📱 App Pages
 
 | Page | Description |
 |---|---|
@@ -245,7 +339,7 @@ The entire ML pipeline is deployed as an **interactive multi-page Streamlit app*
 | 📈 **EDA** | Target distribution, feature histograms, scatter plots, full correlation heatmap |
 | 🤖 **Individual Models** | Select any model — view Actual vs Predicted scatter and residual plot with live metrics |
 | 🎯 **Ensemble Models** | Explore all 7 ensemble methods with residual distribution charts |
-| 🔍 **Feature Importance** | Side-by-side bar charts for Random Forest, XGBoost, and Gradient Boosting |
+| 🔍 **Feature Importance** | Side-by-side importance bar charts for Random Forest, XGBoost, and Gradient Boosting |
 | 🏆 **Model Comparison** | Full ranked leaderboard with R² and RMSE bar charts; best model highlighted |
 | 🔮 **Predict Your Price** | Interactive sliders for all 8 features → live price estimate with error band |
 
@@ -262,7 +356,18 @@ The entire ML pipeline is deployed as an **interactive multi-page Streamlit app*
 
 ---
 
-### Running Locally
+### 📸 Screenshots
+
+> Add screenshots to a `screenshots/` folder in your repo and update the paths below.
+
+| | |
+|---|---|
+| ![Dataset Overview](screenshots/dataset_overview.png) | ![EDA](screenshots/eda.png) |
+| ![Model Comparison](screenshots/model_comparison.png) | ![Predict](screenshots/predict.png) |
+
+---
+
+### ⚙️ Running Locally
 
 ```bash
 # 1. Clone the repo
@@ -280,7 +385,7 @@ streamlit run app.py
 
 ---
 
-### App Dependencies
+### 📦 App Dependencies
 
 ```
 streamlit>=1.35
@@ -307,19 +412,20 @@ seaborn>=0.13
 
 ---
 
-## 🔮 Future Work
+## Future Work
 
 - **Hyperparameter tuning** via GridSearchCV to push R² beyond 0.80
 - **Feature engineering** — rooms per household, bedrooms per room ratio
 - **SHAP values** for per-prediction interpretability
+- **Geospatial visualisation** — map predictions across California
 - **Pipeline standardisation** — unify scaling across all models using scikit-learn `Pipeline`
 
 ---
 
-##  Acknowledgements
+## Acknowledgements
 
 Dataset from [Cameron Nugent on Kaggle](https://www.kaggle.com/datasets/camnugent/california-housing-prices), sourced from the 1990 California Census.
 *Pace, R. K., & Barry, R. (1997). Sparse spatial autoregressions. Statistics & Probability Letters.*
 
 ---
-*Built with Python · Scikit-Learn · numpy · pandas · streamlit *
+*Built with Python · Scikit-Learn · numpy · pandas*
