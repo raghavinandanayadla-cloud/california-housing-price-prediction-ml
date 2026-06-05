@@ -358,12 +358,17 @@ https://california-housing-price-prediction-ml.streamlit.app/
 
 ### 📸 Screenshots
 
-> Add screenshots to a `screenshots/` folder in your repo and update the paths below.
-
-| | |
+| Dataset Overview | EDA |
 |---|---|
-| ![Dataset Overview](screenshots/dataset_overview.png) | ![EDA](screenshots/eda.png) |
-| ![Model Comparison](screenshots/model_comparison.png) | ![Predict](screenshots/predict.png) |
+| ![Dataset Overview](assets/Screenshot1.png) | ![EDA](assets/Screenshot2.png) |
+
+| Features | Model comparision |
+|---|---|
+| ![Model Comparison](assets/features.png) | ![Prediction](assets/modelcomparision.png) |
+
+| feature tuning | Prediction |
+|---|---|
+| ![Model Comparison](assets/ft.png) | ![Prediction](assets/predict.png) |
 
 ---
 
